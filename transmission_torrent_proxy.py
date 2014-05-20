@@ -80,14 +80,11 @@ class OSClient(object):
             status_file.write(json.dumps(data_to_write))
 
     def download(self, path):
+        source = '%s@%s:%s' % (config.username, config.hostname, path)
         args = [
             'rsync',
-            'avz',
-            '%s@%s:%s' % (
-                config.username,
-                config.hostname,
-                path
-            ),
+            '--avz',
+            source,
             config.output_directory
         ]
 
