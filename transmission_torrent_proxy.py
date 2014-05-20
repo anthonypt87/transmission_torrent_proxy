@@ -47,9 +47,9 @@ class TransmissionTorrentProxy(object):
             if torrent.status == 'seeding':
                 self._download_all_files(torrent)
             self._os_client.update_status(torrent.id, Status.COMPLETE)
-            self._transmission_client.update_status(
-                torrent.id,
-                Status.COMPLETE
+            self._transmission_client.remote_torrent(
+                [torrent.id],
+                delete_data=True
             )
 
     def _download_all_files(self, torrent):
