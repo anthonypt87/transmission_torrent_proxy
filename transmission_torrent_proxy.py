@@ -35,8 +35,6 @@ class TransmissionTorrentProxy(object):
         self._os_client.update_status(torrent.id, Status.TORRENTING)
 
     def download_results_if_any_done(self):
-        self._os_client.create_download_directory_if_not_exists()
-
         status = self._os_client.get_data_from_status_file()
         if not status:
             return
@@ -68,10 +66,6 @@ class OSClient(object):
                 return
             return json.loads(raw_data)
 
-    def create_download_directory_if_not_exists(self):
-        if not os.path.exists(config.output_directory):
-            os.mkdir(config.output_directory)
-
     def update_status(self, _id, status):
         with open(config.status_file, 'w+') as status_file:
             raw_data = status_file.read()
@@ -84,6 +78,7 @@ class OSClient(object):
             status_file.write(json.dumps(data_to_write))
 
     def download(self, path):
+        self._create_download_directory_if_not_exists()
         source = '%s@%s:"%s"' % (config.user, config.hostname, path)
         args = [
             'rsync',
@@ -93,6 +88,10 @@ class OSClient(object):
         ]
 
         subprocess.call(args)
+
+    def _create_download_directory_if_not_exists(self):
+        if not os.path.exists(config.output_directory):
+            os.mkdir(config.output_directory)
 
 
 if __name__ == '__main__':

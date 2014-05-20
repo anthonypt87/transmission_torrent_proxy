@@ -45,10 +45,7 @@ class TorrentProxyIntegrationTest(unittest.TestCase):
         ttp = transmission_torrent_proxy.TransmissionTorrentProxy(self.client)
         ttp.add_torrent(self.test_torrent_file)
         ttp.download_results_if_any_done()
-        self.assertEqual(
-            os.listdir(config.output_directory),
-            []
-        )
+        self.assertFalse(os.path.exists(config.output_directory))
         self._assert_status_file_has_things()
 
 
@@ -71,7 +68,7 @@ class TorrentProxyUnitTest(unittest.TestCase):
             downloadDir='downloadDir',
             status='seeding'
         )
-        torrent.get_files.return_value = {0: {'name': 'name'}}
+        torrent.files.return_value = {0: {'name': 'name'}}
         torrent_client.get_torrent.return_value = torrent
 
         tp.download_results_if_any_done()
