@@ -26,12 +26,12 @@ def get_transmission_client():
 
 class TransmissionTorrentProxy(object):
 
-    def __init__(self, client, os_client=None):
-        self._client = client
+    def __init__(self, transmission_client, os_client=None):
+        self._transmission_client = transmission_client
         self._os_client = os_client or OSClient()
 
     def add_torrent(self, torrent_url):
-        torrent = self._client.add_torrent(torrent_url)
+        torrent = self._transmission_client.add_torrent(torrent_url)
         self._os_client.update_status(torrent.id, Status.TORRENTING)
 
     def download_results_if_any_done(self):
@@ -43,10 +43,14 @@ class TransmissionTorrentProxy(object):
             if torrent_status != Status.TORRENTING:
                 continue
 
-            torrent = self._client.get_torrent(torrent_id)
+            torrent = self._transmission_client.get_torrent(torrent_id)
             if torrent.status == 'seeding':
                 self._download_all_files(torrent)
             self._os_client.update_status(torrent.id, Status.COMPLETE)
+            self._transmission_client.update_status(
+                torrent.id,
+                Status.COMPLETE
+            )
 
     def _download_all_files(self, torrent):
         for torrent_file in torrent.files().values():
