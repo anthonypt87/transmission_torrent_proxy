@@ -1,8 +1,12 @@
-import subprocess
-import os
 import json
-import config
+import os
+import subprocess
+import time
+
+import argparse
 import transmissionrpc
+
+import config
 
 
 class Status(object):
@@ -47,7 +51,7 @@ class TransmissionTorrentProxy(object):
             self._os_client.update_status(torrent.id, Status.COMPLETE)
 
     def _download_all_files(self, torrent):
-        for torrent_file in torrent.get_files().values():
+        for torrent_file in torrent.files().values():
             remote_filename = os.path.join(
                 torrent.downloadDir,
                 torrent_file['name']
@@ -80,12 +84,28 @@ class OSClient(object):
             status_file.write(json.dumps(data_to_write))
 
     def download(self, path):
-        source = '%s@%s:%s' % (config.username, config.hostname, path)
+        source = '%s@%s:"%s"' % (config.user, config.hostname, path)
         args = [
             'rsync',
-            '--avz',
+            '-avz',
             source,
             config.output_directory
         ]
 
         subprocess.call(args)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('torrent_location', default=None, nargs='?')
+    args = parser.parse_args()
+
+    transmission_client = get_transmission_client()
+    ttp = TransmissionTorrentProxy(transmission_client)
+
+    if args.torrent_location is not None:
+        ttp.add_torrent(args.torrent_location)
+    else:
+        while True:
+            ttp.download_results_if_any_done()
+            time.sleep(60)
