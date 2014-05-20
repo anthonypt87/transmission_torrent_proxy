@@ -63,7 +63,7 @@ class TorrentProxyUnitTest(unittest.TestCase):
         )
 
         os_client.get_data_from_status_file.return_value = {
-            '1': transmission_torrent_proxy.Status.DOWNLOADING_TORRENT
+            '1': transmission_torrent_proxy.Status.TORRENTING
         }
 
         torrent = mock.Mock(
@@ -76,11 +76,10 @@ class TorrentProxyUnitTest(unittest.TestCase):
 
         tp.download_results_if_any_done()
 
-        os_client.download.assert_called_once_with(
-            'downloadDir/name'
-        )
-        os_client.merge_status.assert_called_once_with(
-            {'1': transmission_torrent_proxy.Status.COMPLETE}
+        os_client.download.assert_called_once_with('downloadDir/name')
+        os_client.update_status.assert_called_once_with(
+            '1',
+            transmission_torrent_proxy.Status.COMPLETE
         )
 
 
